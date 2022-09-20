@@ -79,7 +79,8 @@ def cross_attention(img, text):
 
     return img
 
-
+### The sinusoidal_embedding, ResidualBlock, Down/UP Block taken from https://github.com/keras-team/keras-io/blob/master/examples/generative/ddim.py
+### Only change is adding self/cross attention:
 def sinusoidal_embedding(x):
     #TODO: remove the hardcoded values here:
     embedding_min_frequency = 1.0

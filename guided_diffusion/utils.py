@@ -1,30 +1,9 @@
 import pandas as pd
 import numpy as np
-import seaborn as sns
 from matplotlib import pyplot as plt
-import re
-
-#import tensorflow_datasets as tfds
-import tensorflow as tf
-from tensorflow.keras import layers
-from tensorflow.keras.datasets import mnist, fashion_mnist, cifar10, cifar100
-from tensorflow.keras.models import Model
-from keras.utils.vis_utils import plot_model
-
-import keras
-import math
 import os
-from tqdm import tqdm
-
-from numpy.lib.type_check import imag
 from numpy.linalg import norm
-
 from diffuser import Diffuser
-
-
-plt.rcParams["figure.figsize"] = (8, 6)
-#% config
-#InlineBackend.figure_format = 'retina'
 
 
 def preprocess(array):
@@ -37,6 +16,10 @@ def preprocess(array):
 
     return array
 
+
+#######
+# TRAIN UTILS:
+#######
 
 def add_noise(array, mu=0, std=1):
     # THIS IS IMPORTANT:
@@ -59,11 +42,8 @@ def add_noise(array, mu=0, std=1):
     return noisy_data, noise_level_sqrt
 
 
-#######
-# UTILS:
-#######
-
 def slerp(p0, p1, t):
+    """spherical interpolation"""
     omega = np.arccos(np.dot(p0 / norm(p0), p1 / norm(p1)))
     so = np.sin(omega)
     return np.sin((1.0 - t) * omega) / so * p0 + np.sin(t * omega) / so * p1
@@ -84,7 +64,8 @@ def imshow(img):
         return (img + 1) / 2
 
     # img here is betweeen -1 and 1:
-    # img = img.reshape(image_size, image_size)
+    if img.shape[-1] == 1:
+        img = img.reshape(img.shape[0], img.shape[1])
     img = np.clip(img, -1, 1)
     plt.imshow(norm_0_1(img))
 
@@ -137,29 +118,26 @@ def get_data(npz_file_name="ccm100_1k.npz", prop=0.6, captions=True):
         return train_data, train_label_embeddings
 
 
-def on_epoch_end(i, model, model_path, rand_image, labels_ohe, home_dir):
-    num_imgs = 64
-
-    print("saving model:")
-    model.save(model_path)
-
-    # big_diffuser = Diffuser(model,
-    #                         class_guidance=3,
-    #                         diffusion_steps=35)
-    #
-    # imgs = big_diffuser.reverse_diffusion(rand_image, labels_ohe)
-    # img_path = os.path.join(home_dir, str(i))
-    # plot_images(imgs, save_name=img_path)
-
-
-def batch_generator(model, model_path, train_data, train_label_embeddings, batch_size, rand_image, labels_ohe, home_dir):
+def batch_generator(model, model_path, train_data, train_label_embeddings, epochs,
+                    batch_size, rand_image, labels_ohe, home_dir, class_guidance=3):
     indices = np.arange(len(train_data))
     batch = []
     epoch = 0
-    while True:
-        on_epoch_end(epoch, model, model_path, rand_image, labels_ohe, home_dir)
+    print("Training for {0}".format(epochs))
+    while epoch < epochs:
+        print("saving model:")
+        model.save(model_path)
+
+        print(" Generating images:")
+        big_diffuser = Diffuser(model,
+                                class_guidance=class_guidance,
+                                diffusion_steps=35)
+
+        imgs = big_diffuser.reverse_diffusion(rand_image, labels_ohe)
+        img_path = os.path.join(home_dir, str(epoch))
+        plot_images(imgs, save_name=img_path, nrows=int(np.sqrt(len(imgs))))
+
         print("new epoch {0}".format(epoch))
-        ## save new images here.
         # it might be a good idea to shuffle your data before each epoch
         np.random.shuffle(indices)
         for i in indices:
@@ -193,6 +171,5 @@ def get_common_words(n):
     word_counts = pd.DataFrame(word_counts.T, index=vectorizer.get_feature_names_out())
     return word_counts.sort_values(0, ascending=False).head(n)
 
-
-#from google.colab import drive
-#drive.mount('/content/drive')
+# from google.colab import drive
+# drive.mount('/content/drive')

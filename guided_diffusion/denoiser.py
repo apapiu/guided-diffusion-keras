@@ -13,15 +13,10 @@ from tensorflow.keras.models import Model
 # also from stable diffusion:
 def attention(qkv):
     q, k, v = qkv
-    # f  [bs, h*w, c']
-    # g  [bs, h*w, c']
-    # h  [bs, h*w, c]
-
     # should we scale this?
-    s = tf.matmul(k, q, transpose_b=True)  # # [bs, h*w, h*w]
+    s = tf.matmul(k, q, transpose_b=True)  # [bs, h*w, h*w]
     beta = tf.nn.softmax(s)  # attention map
     o = tf.matmul(beta, v)  # [bs, h*w, C]
-
     return o
 
 
@@ -69,7 +64,6 @@ def cross_attention(img, text):
     k = layers.Reshape((k.shape[1] * k.shape[2], k.shape[3],))(k)
     v = layers.Reshape((v.shape[1] * v.shape[2], v.shape[3],))(v)
 
-    # should we scale this?
     img = layers.Lambda(attention)([q, k, v])
     img = layers.Reshape(orig_shape)(img)
 
@@ -79,7 +73,8 @@ def cross_attention(img, text):
 
     return img
 
-### The sinusoidal_embedding, ResidualBlock, Down/UP Block taken from https://github.com/keras-team/keras-io/blob/master/examples/generative/ddim.py
+### The sinusoidal_embedding, ResidualBlock, Down/UP Block taken from
+### https://github.com/keras-team/keras-io/blob/master/examples/generative/ddim.py
 ### Only change is adding self/cross attention:
 def sinusoidal_embedding(x):
     #TODO: remove the hardcoded values here:

@@ -97,21 +97,20 @@ def get_labels(num_classes=100, emb=True):
     return labels_ohe
 
 
-def get_data(npz_file_name="ccm100_1k.npz", prop=0.6, captions=True):
-    data = np.load("/content/drive/MyDrive/{0}".format(npz_file_name))
+def get_data(npz_file_path, prop=0.6, captions=False):
+    data = np.load(npz_file_path)
 
     if captions:
         train_data, train_label_embeddings, caption_list = data["arr_0"], data["arr_1"], data["arr_2"]
     else:
         train_data, train_label_embeddings = data["arr_0"], data["arr_1"]
 
-    # eliminate if perc white pixels > 60%.
+    # eliminate if perc white pixels > 60% - not really used.
     white_pixels = (train_data >= 254).mean(axis=(1, 2, 3))
-    mask = (white_pixels < 0.6)
+    mask = (white_pixels < prop)
 
     if captions:
-        train_data, train_label_embeddings, caption_list = train_data[mask], train_label_embeddings[mask], caption_list[
-            mask]
+        train_data, train_label_embeddings, caption_list = train_data[mask], train_label_embeddings[mask], caption_list[mask]
         return train_data, train_label_embeddings, caption_list
     else:
         train_data, train_label_embeddings = train_data[mask], train_label_embeddings[mask]

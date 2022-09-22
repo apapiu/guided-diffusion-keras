@@ -20,7 +20,7 @@ You should be able to see reasonable image generations within 5 epochs (5 minute
   - For CIFAR 10/100 - You can get reasonable results after 20 epochs for CIFAR 10 and 30 epochs for CIFAR 100.
 Training 50-100 epochs is even better. CFG = 2.
 
-- Train CLIP Conditioned Text to Img Model on 130k 64x64 images+prompts from Laion Aesthetics 6.5+. [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1EoGdyZTGVeOrEnieWyzjItusBSes_1Ef?usp=sharing) 
+- Train CLIP Conditioned Text to Img Model on 130k 64x64 images+prompts from Laion Aesthetics 6.5+. [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/123iljowP_b5o-_6RjHZK8vbgBkrNn8-c?usp=sharing) 
   - You can get reasonable results after 15 epochs
   ~ 10 minutes per epoch (V100)
 - Test Prompts on a model trained for about 60 epochs (~60 hours on 1 V100) on entire 600k Laion Aesthetics 6.5+.

@@ -1,29 +1,34 @@
 # Text to Image Model in Keras
 
+Codebase to train a CLIP conditioned Text to Image Diffusion model on Colab in Keras. See below for notebooks and examples with prompts.
 
-Training a simple CLIP conditioned Text to Image Diffusion model on Colab in Keras. See below for notebooks and examples with prompts.
+Images generated for the prompt: `A small village in the Alps, spring, sunset` (more exampes below)
 
-The goal of this repo is to provide a simple, self-contained Text to Image Diffusion that can be trained in Colab in a 
-reasonable amount of time.
+<img width="500" alt="image" src="https://user-images.githubusercontent.com/13619417/191170681-17c3820b-7fe1-44ad-bb51-30a521d465f7.png">
 
-There is a lot of great content on diffusion models out there however I have found it to be either too math heavy or 
-requiring instance computational resources. Particulary the idea of _training_ a Dalle or Stable Diffusion like model seems daunting especially after you hear 
-stable diffusion took $600k, 600M images, and thousands of GPUs to train. Turns out you can accomplish 
-quite a lot with little resources and without having a PhD in thermodynamics! 
+The goal of this repo is to provide a simple, self-contained codebase for Text to Image Diffusion that can be trained in Colab in a 
+reasonable amount of time. 
 
+While there are a lot of great resources around the math and usage of diffusion models I haven't found many specifically
+focused on _training_ diffusion models. 
+Particulary the idea of _training_ a Dalle-2 or Stable Diffusion like model feels like a daunting task requiring immense 
+computational resources and data. Turns out you can accomplish quite a lot with little resources and without having a PhD in thermodynamics!
+
+If you are just starting out I recommend trying out the next two notebook in order. The first should be able to get you 
+recognizable images on the Fashion Mnist dataset within minutes!
 
 ### Example Notebooks:
 
 - Train Class Conditional Fashion MNIST: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1EoGdyZTGVeOrEnieWyzjItusBSes_1Ef?usp=sharing)
   - To try out the code you can use the notebook above in colab. It is set to train on the fashion mnist dataset.
-You should be able to see reasonable image generations within 5 epochs (5 minutes on a V100 GPU)!
-  - For CIFAR 10/100 - You can get reasonable results after 20 epochs for CIFAR 10 and 30 epochs for CIFAR 100.
+You should be able to see reasonable image generations withing 5 epochs (5-20 minutes depending on GPU)!
+  - For CIFAR 10/100 - you just have to change the config. You can get reasonable results after 20 epochs for CIFAR 10 and 30 epochs for CIFAR 100.
 Training 50-100 epochs is even better. CFG = 2.
 
-- Train CLIP Conditioned Text to Img Model on 130k 64x64 images+prompts from Laion Aesthetics 6.5+. [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/123iljowP_b5o-_6RjHZK8vbgBkrNn8-c?usp=sharing) 
+- Train CLIP Conditioned Text to Img Model on 115k 64x64 images+prompts sampled from the Laion Aesthetics 6.5+ dataset. 
   - You can get reasonable results after 15 epochs
   ~ 10 minutes per epoch (V100)
-- Test Prompts on a model trained for about 60 epochs (~60 hours on 1 V100) on entire 600k Laion Aesthetics 6.5+.
+- Test Prompts on a model trained for about 60 epochs (~60 hours on 1 V100) on entire 600k Laion Aesthetics 6.5+. [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/123iljowP_b5o-_6RjHZK8vbgBkrNn8-c?usp=sharing) 
   - This model has about 40 million parameters (150MB) 
 
 ### Model Setup:

@@ -5,6 +5,27 @@ import os
 from numpy.linalg import norm
 from diffuser import Diffuser
 
+import torch
+from torch.utils.data import DataLoader
+import clip
+
+def get_text_encodings(prompts):
+    #model, preprocess = clip.load("ViT-B/32")
+    data_loader = DataLoader(prompts, batch_size=256)
+
+    all_encodings = []
+    for labels in data_loader:
+        text_tokens = clip.tokenize(labels, truncate=True).cuda()
+
+        with torch.no_grad():
+            text_encoding = model.encode_text(text_tokens)
+
+        all_encodings.append(text_encoding)
+
+    all_encodings = torch.cat(all_encodings).cpu().numpy()
+
+    return all_encodings
+
 
 def preprocess(array):
     """
@@ -169,6 +190,3 @@ def get_common_words(n):
     word_counts = (word_counts.sum(0))
     word_counts = pd.DataFrame(word_counts.T, index=vectorizer.get_feature_names_out())
     return word_counts.sort_values(0, ascending=False).head(n)
-
-# from google.colab import drive
-# drive.mount('/content/drive')

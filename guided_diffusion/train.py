@@ -49,6 +49,7 @@ from diffuser import Diffuser
 image_size = 32
 num_channels = 3
 epochs = 30
+class_guidance = 3
 
 # architecture
 channels = 64
@@ -155,6 +156,10 @@ print("Generating Images below: Note the first row is always unconditional gener
 #!create generator and train:
 #############################
 
+class_guidance = Diffuser(autoencoder,
+                          class_guidance=class_guidance,
+                          diffusion_steps=35)
+
 train_generator = batch_generator(autoencoder,
                                   model_path,
                                   train_data,
@@ -164,7 +169,7 @@ train_generator = batch_generator(autoencoder,
                                   rand_image,
                                   labels,
                                   home_dir,
-                                  class_guidance=2)
+                                  diffuser)
 
 autoencoder.optimizer.learning_rate.assign(learning_rate)
 

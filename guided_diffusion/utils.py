@@ -126,7 +126,7 @@ def get_data(npz_file_path, prop=0.6, captions=False):
 
 
 def batch_generator(model, model_path, train_data, train_label_embeddings, epochs,
-                    batch_size, rand_image, labels, home_dir, class_guidance=3):
+                    batch_size, rand_image, labels, home_dir, diffuser):
     indices = np.arange(len(train_data))
     batch = []
     epoch = 0
@@ -136,11 +136,7 @@ def batch_generator(model, model_path, train_data, train_label_embeddings, epoch
         model.save(model_path)
 
         print(" Generating images:")
-        big_diffuser = Diffuser(model,
-                                class_guidance=class_guidance,
-                                diffusion_steps=35)
-
-        imgs = big_diffuser.reverse_diffusion(rand_image, labels)
+        imgs = diffuser.reverse_diffusion(rand_image, labels)
         img_path = os.path.join(home_dir, str(epoch))
         plot_images(imgs, save_name=img_path, nrows=int(np.sqrt(len(imgs))))
 

@@ -156,9 +156,9 @@ print("Generating Images below: Note the first row is always unconditional gener
 #!create generator and train:
 #############################
 
-class_guidance = Diffuser(autoencoder,
-                          class_guidance=class_guidance,
-                          diffusion_steps=35)
+diffuser = Diffuser(autoencoder,
+                    class_guidance=class_guidance,
+                    diffusion_steps=35)
 
 train_generator = batch_generator(autoencoder,
                                   model_path,

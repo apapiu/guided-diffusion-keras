@@ -135,6 +135,7 @@ def batch_generator(model, model_path, train_data, train_label_embeddings, epoch
         model.save(model_path)
 
         print(" Generating images:")
+        diffuser.denoiser = model
         imgs = diffuser.reverse_diffusion(rand_image, labels)
         img_path = os.path.join(home_dir, str(epoch))
         plot_images(imgs, save_name=img_path, nrows=int(np.sqrt(len(imgs))))

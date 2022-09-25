@@ -1,7 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from utils import imshow
+from utils import imshow, plot_images
 
 
 def dynamic_thresholding(img, perc=99.5):
@@ -69,7 +69,9 @@ class Diffuser:
             new_img = ((curr_noise - next_noise) * x0_pred + next_noise * new_img) / curr_noise
 
             if show_img:
-                imshow(x0_pred[0])
+                plot_images(x0_pred, nrows=np.sqrt(len(new_img)),
+                            save_name=str(i),
+                            size=12)
                 plt.show()
 
         return x0_pred

@@ -3,13 +3,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 import os
 from numpy.linalg import norm
-from diffuser import Diffuser
 
 import torch
 from torch.utils.data import DataLoader
 import clip
 
-def get_text_encodings(prompts):
+def get_text_encodings(prompts, model):
     #model, preprocess = clip.load("ViT-B/32")
     data_loader = DataLoader(prompts, batch_size=256)
 

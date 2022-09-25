@@ -24,12 +24,12 @@ class Diffuser:
         self.perc_thresholding = perc_thresholding
         self.batch_size = batch_size
 
-    def predict_x_zero(self, x_t, label_ohe, noise_level):
+    def predict_x_zero(self, x_t, label, noise_level):
         """Predict original image based on noisy image (or matrix of noisy images) at noise level plus conditional label"""
 
         # we use 0 for the unconditional embedding:
         num_imgs = len(x_t)
-        label_empty_ohe = np.zeros(shape=label_ohe.shape)
+        label_empty_ohe = np.zeros(shape=label.shape)
 
         # predict x0:
         noise_in = np.array([noise_level] * num_imgs)[:, None, None, None]
@@ -38,7 +38,7 @@ class Diffuser:
         # concatenate the conditional and unconditional inputs to speed inference:
         nn_inputs = [np.vstack([x_t, x_t]),
                      np.vstack([noise_in, noise_in]),
-                     np.vstack([label_ohe, label_empty_ohe])]
+                     np.vstack([label, label_empty_ohe])]
 
         x0_pred = self.denoiser.predict(nn_inputs, batch_size=self.batch_size)
 
@@ -53,7 +53,7 @@ class Diffuser:
 
         return x0_pred
 
-    def reverse_diffusion(self, seeds, label_ohe, show_img=False, masked_imgs=None, mask=None, u=1):
+    def reverse_diffusion(self, seeds, label, show_img=False, masked_imgs=None, mask=None, u=1):
         """Reverse Guided Diffusion on a matrix of random images (seeds). Returns generated images"""
 
         new_img = seeds
@@ -63,7 +63,7 @@ class Diffuser:
             curr_noise, next_noise = self.noise_levels[i], self.noise_levels[i + 1]
 
             # predict original denoised image:
-            x0_pred = self.predict_x_zero(new_img, label_ohe, curr_noise)
+            x0_pred = self.predict_x_zero(new_img, label, curr_noise)
 
             # new image at next_noise level is a weighted average of old image and predicted x0:
             new_img = ((next_noise - curr_noise) * x0_pred + curr_noise * new_img) / next_noise

@@ -5,13 +5,9 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Model
 
-#######
-# MODEL:
-#######
 
-# https://github.com/taki0112/Self-Attention-GAN-Tensorflow
-# also from stable diffusion:
 def attention(qkv):
+
     q, k, v = qkv
     # should we scale this?
     s = tf.matmul(k, q, transpose_b=True)  # [bs, h*w, h*w]
@@ -21,12 +17,14 @@ def attention(qkv):
 
 
 def spatial_attention(img):
+    # Attention implementation a combination of:
+    # https://github.com/taki0112/Self-Attention-GAN-Tensorflow and
+    # https://github.com/CompVis/stable-diffusion/blob/main/ldm/modules/attention.py
+
     filters = img.shape[3]
     orig_shape = ((img.shape[1], img.shape[2], img.shape[3]))
     print(orig_shape)
     img = layers.BatchNormalization()(img)
-
-    # q/k/v could be from different
 
     # projections:
     q = layers.Conv2D(filters // 8, kernel_size=1, padding="same")(img)
@@ -37,7 +35,6 @@ def spatial_attention(img):
     q = layers.Reshape((q.shape[1] * q.shape[2], q.shape[3]))(q)
     v = layers.Reshape((v.shape[1] * v.shape[2], v.shape[3],))(v)
 
-    # should we scale this?
     img = layers.Lambda(attention)([q, k, v])
     img = layers.Reshape(orig_shape)(img)
 
@@ -76,6 +73,7 @@ def cross_attention(img, text):
 ### The sinusoidal_embedding, ResidualBlock, Down/UP Block taken from
 ### https://github.com/keras-team/keras-io/blob/master/examples/generative/ddim.py
 ### Only change is adding self/cross attention:
+
 def sinusoidal_embedding(x):
     #TODO: remove the hardcoded values here:
     embedding_min_frequency = 1.0

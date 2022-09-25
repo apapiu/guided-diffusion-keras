@@ -115,9 +115,9 @@ else:
 print(train_data.shape)
 
 if precomputed_embedding:
-    labels_ohe = train_label_embeddings[:num_imgs]
+    labels = train_label_embeddings[:num_imgs]
 else:
-    labels_ohe = np.array([[i] * row for i in np.arange(row)]).flatten()[:, None]
+    labels = np.array([[i] * row for i in np.arange(row)]).flatten()[:, None]
 
 np.random.seed(100)
 rand_image = np.random.normal(0, 1, (num_imgs, image_size, image_size, num_channels))
@@ -162,7 +162,7 @@ train_generator = batch_generator(autoencoder,
                                   epochs,
                                   batch_size,
                                   rand_image,
-                                  labels_ohe,
+                                  labels,
                                   home_dir,
                                   class_guidance=2)
 

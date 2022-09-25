@@ -49,6 +49,7 @@ from diffuser import Diffuser
 image_size = 32
 num_channels = 3
 epochs = 30
+class_guidance = 3
 
 # architecture
 channels = 64
@@ -115,9 +116,9 @@ else:
 print(train_data.shape)
 
 if precomputed_embedding:
-    labels_ohe = train_label_embeddings[:num_imgs]
+    labels = train_label_embeddings[:num_imgs]
 else:
-    labels_ohe = np.array([[i] * row for i in np.arange(row)]).flatten()[:, None]
+    labels = np.array([[i] * row for i in np.arange(row)]).flatten()[:, None]
 
 np.random.seed(100)
 rand_image = np.random.normal(0, 1, (num_imgs, image_size, image_size, num_channels))
@@ -155,6 +156,10 @@ print("Generating Images below: Note the first row is always unconditional gener
 #!create generator and train:
 #############################
 
+diffuser = Diffuser(autoencoder,
+                    class_guidance=class_guidance,
+                    diffusion_steps=35)
+
 train_generator = batch_generator(autoencoder,
                                   model_path,
                                   train_data,
@@ -162,9 +167,9 @@ train_generator = batch_generator(autoencoder,
                                   epochs,
                                   batch_size,
                                   rand_image,
-                                  labels_ohe,
+                                  labels,
                                   home_dir,
-                                  class_guidance=2)
+                                  diffuser)
 
 autoencoder.optimizer.learning_rate.assign(learning_rate)
 

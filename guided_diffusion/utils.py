@@ -3,13 +3,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 import os
 from numpy.linalg import norm
-from diffuser import Diffuser
 
 import torch
 from torch.utils.data import DataLoader
 import clip
 
-def get_text_encodings(prompts):
+def get_text_encodings(prompts, model):
     #model, preprocess = clip.load("ViT-B/32")
     data_loader = DataLoader(prompts, batch_size=256)
 
@@ -43,24 +42,23 @@ def preprocess(array):
 #######
 
 def add_noise(array, mu=0, std=1):
-    # THIS IS IMPORTANT:
+    #TODO: have a better way to parametrize this:
     x = np.abs(np.random.normal(0, std, 2 * len(array)))
     x = x[x < 3]
     x = x / 3
     x = x[:len(array)]
-    noise_level_sqrt = x
+    noise_levels = x
 
-    signal_level_sqrt = 1 - noise_level_sqrt  # - using linear weight works as well! np.sqrt(1-np.square(noise_level_sqrt))
+    signal_levels = 1 - noise_levels  #OR: np.sqrt(1-np.square(noise_levels))
 
     # reshape so that the multiplication makes sense:
-    noise_level_reshape_sqrt = noise_level_sqrt[:, None, None, None]
-    signal_level_reshape_sqrt = signal_level_sqrt[:, None, None, None]
+    noise_level_reshape = noise_levels[:, None, None, None]
+    signal_level_reshape = signal_levels[:, None, None, None]
 
     pure_noise = np.random.normal(0, 1, size=array.shape).astype("float32")
+    noisy_data = array * signal_level_reshape + pure_noise * noise_level_reshape
 
-    noisy_data = array * signal_level_reshape_sqrt + np.random.normal(0, 1, size=array.shape) * noise_level_reshape_sqrt
-
-    return noisy_data, noise_level_sqrt
+    return noisy_data, noise_levels
 
 
 def slerp(p0, p1, t):
@@ -106,18 +104,6 @@ def plot_images(imgs, size=16, nrows=8, save_name=None):
     plt.show()
 
 
-def get_labels(num_classes=100, emb=True):
-    labels_ohe = np.zeros(num_imgs)
-    for i in range(10):
-        labels_ohe[10 * i:10 * (i + 1)] = i
-
-    if emb:
-        text_labels = labels[labels_ohe]
-        labels_ohe = np.vstack([get_embedding(label) for label in text_labels.values])
-
-    return labels_ohe
-
-
 def get_data(npz_file_path, prop=0.6, captions=False):
     data = np.load(npz_file_path)
 
@@ -139,7 +125,7 @@ def get_data(npz_file_path, prop=0.6, captions=False):
 
 
 def batch_generator(model, model_path, train_data, train_label_embeddings, epochs,
-                    batch_size, rand_image, labels_ohe, home_dir, class_guidance=3):
+                    batch_size, rand_image, labels, home_dir, diffuser):
     indices = np.arange(len(train_data))
     batch = []
     epoch = 0
@@ -149,11 +135,8 @@ def batch_generator(model, model_path, train_data, train_label_embeddings, epoch
         model.save(model_path)
 
         print(" Generating images:")
-        big_diffuser = Diffuser(model,
-                                class_guidance=class_guidance,
-                                diffusion_steps=35)
-
-        imgs = big_diffuser.reverse_diffusion(rand_image, labels_ohe)
+        diffuser.denoiser = model
+        imgs = diffuser.reverse_diffusion(rand_image, labels)
         img_path = os.path.join(home_dir, str(epoch))
         plot_images(imgs, save_name=img_path, nrows=int(np.sqrt(len(imgs))))
 

@@ -6,6 +6,11 @@ Images generated for the prompt: `A small village in the Alps, spring, sunset`
 
 <img width="500" alt="image" src="https://user-images.githubusercontent.com/13619417/191170681-17c3820b-7fe1-44ad-bb51-30a521d465f7.png">
 
+Images generated for the prompt: `Portrait of a young woman with curly red hair, photograph` 
+
+<img width="500" alt="image" src="https://user-images.githubusercontent.com/13619417/192167167-5b308069-4483-451e-8aef-0a8dc1d1c10f.png">
+
+
 (more exampes below - try with your own inputs in Colab here: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/123iljowP_b5o-_6RjHZK8vbgBkrNn8-c?usp=sharing) )
 
 The goal of this repo is to provide a simple, self-contained codebase for Text to Image Diffusion that can be trained in Colab in a 
@@ -13,47 +18,50 @@ reasonable amount of time.
 
 While there are a lot of great resources around the math and usage of diffusion models I haven't found many specifically
 focused on _training_ text to img diffusion models. 
-Particulary the idea of _training_ a Dalle-2 or Stable Diffusion like model feels like a daunting task requiring immense 
+Particularly the idea of training a Dall-E 2 or Stable Diffusion like model feels like a daunting task requiring immense 
 computational resources and data. Turns out you can accomplish quite a lot with little resources and without having a PhD in thermodynamics!
 The easiest way to get aquainted with the code is thru the notebooks below. 
 
-#### Credits:
+#### Credits/Resources:
 
 - Original Unet implementation in this [excellent blog post](https://keras.io/examples/generative/ddim/) - most of the code and Unet architecture in `denoiser.py` is based on this. I have added 
 additional text/CLIP/masking embeddings/inputs and cross/self attention.
-- Laion Aesthetics 6.5+
-- Text 2 img package
+- [Conditional CIFAR Model in Pytorch](https://colab.research.google.com/drive/1IJkrrV-D7boSCLVKhi7t5docRYqORtm3#scrollTo=TAUwPLG92r89)
+- [Laion Aesthetics 6.5+ Dataset](https://laion.ai/blog/laion-aesthetics/) - The 625K image-text pairs with predicted aesthetics scores of 6.5 or higher was used for training.
+- [Text 2 img package](https://github.com/hmiladhia/img2text)
+- TODO: more papers - VDM and DDIM papers
 
 ### Notebooks:
 
 If you are just starting out I recommend trying out the next two notebook in order. The first should be able to get you 
 recognizable images on the Fashion Mnist dataset within minutes!
 
-- Train Class Conditional Fashion MNIST: 
+- Train Class Conditional Fashion MNIST/CIFAR [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16rJUyPn72-C30mZRUr-Oo6ZjYS89Z3yH?usp=sharing) 
   - To try out the code you can use the notebook above in colab. It is set to train on the fashion mnist dataset.
 You should be able to see reasonable image generations withing 5 epochs (5-20 minutes depending on GPU)!
   - For CIFAR 10/100 - you just have to change the `file_name`. You can get reasonable results after 25 epochs for CIFAR 10 and 40 epochs for CIFAR 100.
-Training 50-100 epochs is even better. [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16rJUyPn72-C30mZRUr-Oo6ZjYS89Z3yH?usp=sharing)
+Training 50-100 epochs is even better. 
 
 - Train CLIP Conditioned Text to Img Model on 115k 64x64 images+prompts sampled from the Laion Aesthetics 6.5+ dataset. [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1EoGdyZTGVeOrEnieWyzjItusBSes_1Ef?usp=sharing) 
-  - You can get reasonable results after 15 epochs
+  - You can get recognizable results after ~15 epochs
   ~ 10 minutes per epoch (V100)
 - Test Prompts on a model trained for about 60 epochs (~60 hours on 1 V100) on entire 600k Laion Aesthetics 6.5+. [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/123iljowP_b5o-_6RjHZK8vbgBkrNn8-c?usp=sharing) 
   - This model has about 40 million parameters (150MB) 
+  - The examples in this repo use this model
 
 ### Model Setup:
 
 The setup is fairly simple. 
 
 We train a denoising U-NET neural net that takes the following three inputs:
-- image (x) corrupted with a level of random noise
-  - for a give `noise_level` between 0 and 1 the corruption is as follows:
-    - `x_noisy = x*(1-noise_level) + z*noise_level where z ~ np.random.normal`
 - noise_level (sampled from 0 to 1 with more values concentrated close to 0)
+- image (x) corrupted with a level of random noise
+  - for a given `noise_level` between 0 and 1 the corruption is as follows:
+    - `x_noisy = x*(1-noise_level) + z*noise_level where z ~ np.random.normal`
 - CLIP embeddings of a text prompt
-  - You can think of this as a numerical represenation of a prompt (this is the only pretrained model we use). 
+  - You can think of this as a numerical representation of a text prompt (this is the only pretrained model we use). 
 
-and outputs a prediction of the denoised image - call it `f(x_noisy)`.
+The output is a prediction of the denoised image - call it `f(x_noisy)`.
 
 The model is trained to minimize the absolute error `|f(x_noisy) - x|` between the prediction and 
 (you can also use squared error here). 
@@ -70,20 +78,69 @@ Using this model we then iteratively generate an image from random noise as foll
             # new image at next_noise level is a weighted average of old image and predicted x0:
             new_img = ((curr_noise - next_noise) * x0_pred + next_noise * new_img) / curr_noise
 
-There's some math behind this. DDIM like. TODO: explain more here.
+TODO: Explain more how we get the formula. VDM+DDIM.
 
-Note that I use a lot of unorthodox choices in the model and in the diffusion process (linear weights for the noise, 
-weird noise sampling, not scaling the attention). Since I am fairly new to this I found this to be a  
-great way to learn what is crucial vs. what is nice to have. I generally obtained decent results
-so I think the main lesson here is that **diffusion models are stable to train and are fairly robust to model choices**. Even tough I had no experience with generative 
-models before this project I almost never encountered a divergence in training - so go ahead and experiment :) The flipside of this
-is that if you introduce subtle bugs in your code (of which I am sure there are many in this repo) they are pretty hard
-to spot. This is exacerbated by the fact that there are a lot of residual/skip connections in the model so the 
-information will find a way to flow even if you block some pathways.
+Note that I use a lot of unorthodox choices in the modelling (linear weights for the noise, 
+weird noise sampling, not scaling the attention). Since I am fairly new to generative models I found this to be a 
+great way to learn what is crucial vs. what is nice to have. I generally did not see any divergences in training which supports
+the notion that **diffusion models are stable to train and are fairly robust to model choices**. The flipside of 
+this is that if you introduce subtle bugs in your code (of which I am sure there are many in this repo) they are pretty hard
+to spot. 
 
 
-Architecture:
-models train well 
+Architecture: TODO - add cross-attention description.
+
+
+### Data:
+
+The text-to-img models use the [Laion 6.5+ ](https://laion.ai/blog/laion-aesthetics/) datasets. You can see
+some samples [here](http://captions.christoph-schuhmann.de/2B-en-6.5.html). As you can 
+see this dataset is _very_ biased towards landscapes and portraits. Accordingly, the model
+does best at prompts related to art/landscapes/paintings/portraits/architecture.
+
+The script `img_load_utils.py` contains some code to use the img2dataset package to 
+download and store images, texts, and their corresponding embeddings. The Laion datasets are still
+quite messy with a lot of duplicates, bad descriptions etc.
+
+#### 115k Laion Sample: I have uploaded a 115k 64x64 pixels sample from the Laion 6.5+ dataset+their corresponding prompts and CLIP embeddings to huggingface [here](https://huggingface.co/apapiu/diffusion_model_aesthetic_keras/tree/main). 
+This can be used to quickly prototype new generative models. This
+dataset is also used in the notebook above.
+
+TODO: add more info and script on how to preprocess the data and link to huggingface repo.
+Talk about data quality issues.  
+
+
+### Training Process and Colab Hints:
+
+If you want to train the img-to-text model I highly recommend getting at least the Colab Pro or even the Colab
+Pro+ - it's going to be hard to train the model on a K80 GPU, unfortunately. NOTE: Colab will
+change its setup and introduce credits at the end of September - I will update this. 
+
+Setting this training workflow on Google Colab wasn't too bad. My approach has been 
+very low tech and Google Drive played a large role. Basically at the end of every epoch I save the model and the 
+generated images on a small validation set (50-100 images) to Drive.
+
+This has a few advantages:
+- If I get kicked off my colab instance the model is not lost and I just need to restart the instance
+- I can keep record of image generation quality by epoch and go back to check and compare models
+  - Important point here - make sure to use the _same_ random seed for every epoch - this controls for the randomness  
+- Drive saves the past 100 versions of a file so I can always use past model version within the past 100 epochs.
+  - This is important since there is some variability in image quality from epoch to epoch
+- It's low tech and you don't have to learn a new platform like wandb.
+- Reading and saving data in from Drive in Colab is _very_ fast.
+
+With colab PRO+ ($50/month) I managed to train on V100/P100 continuously for 12-24 hours at a time. 
+
+GPUs: With a Pro or Pro+ you will mostly get P100 GPU in my experience. I recommend V100/P100 for this tak. You might get A100 but you won't be able to keep an instance
+on with a A100 for too long. Generally the speed of training is as follows:
+- A100 fastest
+- V100 
+- P100
+- T4
+- K80 slowest
+
+Every card is roughly about twice as fast as the one before it for training. 
+ 
 ### Validation:
 
 I'm not an expert here but generally the validation of generative models
@@ -118,47 +175,6 @@ the model shamelessly copies a training example. Note this is because the image 
 in the training data.
 
 
-### Data:
-
-The text-to-img models use the [Laion 6.5+ ](https://laion.ai/blog/laion-aesthetics/) datasets. You can see
-some samples [here](http://captions.christoph-schuhmann.de/2B-en-6.5.html). As you can 
-see this dataset is _very_ biased towards landscapes and portraits. Accordingly, the model
-does best at prompts related to art/landscapes/paintings/portraits/architecture.
-
-TODO: add more info and script on how to preprocess the data and link to huggingface repo.
-Talk about data quality issues.  
-
-
-### Training Process and Colab Hints:
-
-If you want to train the img-to-text model I highly recommend getting at least the Colab Pro or even the Colab
-Pro+ - it's going to be hard to train the model on a K80 GPU, unfortunately.
-
-Setting this training workflow on Google Colab wasn't too bad. My approach has been 
-very low tech and Google Drive played a large role. Basically at the end of every epoch I save the model and the 
-generated images on a small validation set (50-100 images) to Drive.
-
-This has a few advantages:
-- If I get kicked off my colab instance the model is not lost and I just need to restart the instance
-- I can keep record of image generation quality by epoch and go back to check and compare models
-  - Important point here - make sure to use the _same_ random seed for every epoch - this controls for the randomness  
-- Drive saves the past 100 versions of a file so I can always use past model version within the past 100 epochs.
-  - This is important since there is some variability in image quality from epoch to epoch
-- It's low tech and you don't have to learn a new platform like wandb.
-- Reading and saving data in from Drive in Colab is _very_ fast.
-
-I managed to train on V100/P100 contiously for 12-24 hours at a time. 
-
-GPUs:
-I recommend V100/P100 for this tak. You might get A100 but you won't be able to keep an instance
-on with a A100 for too long. Generally the speed of training is as follows:
-- A100
-- V100
-- P1000
-- T4
-- K80
-
-Every card is roughly about twice as fast as the one before it so 
 
 
 
@@ -166,30 +182,36 @@ Every card is roughly about twice as fast as the one before it so
 ### Examples:
 
 Prompt: `An Italian Villaga Painted by Picasso`
-<img width="781" alt="image" src="https://user-images.githubusercontent.com/13619417/192023316-b11a7a17-2359-4dc0-b727-c51bca167257.png">
+
+<img width="750" alt="image" src="https://user-images.githubusercontent.com/13619417/192023316-b11a7a17-2359-4dc0-b727-c51bca167257.png">
 
 `City at night`
-<img width="797" alt="image" src="https://user-images.githubusercontent.com/13619417/192022599-0f971f63-f124-4964-8e87-6cba51cf05bb.png">
 
-`A man in a suit in the field in wintertime`
-<img width="826" alt="image" src="https://user-images.githubusercontent.com/13619417/192016937-44544116-f27d-43af-a6ce-86506bb44346.png">
+<img width="700" alt="image" src="https://user-images.githubusercontent.com/13619417/192022599-0f971f63-f124-4964-8e87-6cba51cf05bb.png">
 
 `Photograph of young woman in a field of flowers, bokeh`
-<img width="828" alt="image" src="https://user-images.githubusercontent.com/13619417/192019522-b6f9231d-3e60-472d-b1b8-c43e05310de7.png">
+
+<img width="700" alt="image" src="https://user-images.githubusercontent.com/13619417/192019522-b6f9231d-3e60-472d-b1b8-c43e05310de7.png">
 
 `Street on an island in Greece`
-<img width="799" alt="image" src="https://user-images.githubusercontent.com/13619417/192021896-596f35db-5131-4da8-9256-c26e9fa1594d.png">
+
+<img width="700" alt="image" src="https://user-images.githubusercontent.com/13619417/192021896-596f35db-5131-4da8-9256-c26e9fa1594d.png">
 
 `A Mountain Lake in the spring at sunset`
-<img width="769" alt="image" src="https://user-images.githubusercontent.com/13619417/192023995-b102e30c-2e2f-499a-b5e0-0644aedcbf5c.png">
+
+<img width="700" alt="image" src="https://user-images.githubusercontent.com/13619417/192023995-b102e30c-2e2f-499a-b5e0-0644aedcbf5c.png">
+
+`A man in a suit in the field in wintertime`
+
+<img width="700" alt="image" src="https://user-images.githubusercontent.com/13619417/192016937-44544116-f27d-43af-a6ce-86506bb44346.png">
 
 
 CLIP interpolation: "A minimalist living room" -> "A Field in springtime, painting"
 
-<img width="799" alt="image" src="https://user-images.githubusercontent.com/13619417/191169543-6d940748-495b-429f-96a1-e10e1da6bf89.png">
+<img width="700" alt="image" src="https://user-images.githubusercontent.com/13619417/191169543-6d940748-495b-429f-96a1-e10e1da6bf89.png">
 
 CLIP interpolation: "A lake in the forest in the summer" -> "A lake in the forest in the winter"
 
-<img width="798" alt="image" src="https://user-images.githubusercontent.com/13619417/191169640-a8eb9a6f-7808-447a-af5a-094fcc8450ae.png">
+<img width="700" alt="image" src="https://user-images.githubusercontent.com/13619417/191169640-a8eb9a6f-7808-447a-af5a-094fcc8450ae.png">
 
 

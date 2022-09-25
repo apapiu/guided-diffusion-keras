@@ -60,11 +60,15 @@ The model is trained to minimize the absolute error `|f(x_noisy) - x|` between t
 
 Using this model we then iteratively generate an image from random noise as follows:
     
-    #predict original denoised image:
-    x0_pred = self.predict_x_zero(new_img, label_ohe, curr_noise)
+         for i in range(len(self.noise_levels) - 1):
 
-    #new image at next_noise level is a weighted average of old image and predicted x0:
-    new_img = (curr_noise - next_noise)/curr_noise*x0_pred + next_noise/curr_noise*new_img
+            curr_noise, next_noise = self.noise_levels[i], self.noise_levels[i + 1]
+
+            # predict original denoised image:
+            x0_pred = self.predict_x_zero(new_img, label, curr_noise)
+
+            # new image at next_noise level is a weighted average of old image and predicted x0:
+            new_img = ((curr_noise - next_noise) * x0_pred + next_noise * new_img) / curr_noise
 
 There's some math behind this. DDIM like. TODO: explain more here.
 

@@ -66,7 +66,7 @@ class Diffuser:
             x0_pred = self.predict_x_zero(new_img, label, curr_noise)
 
             # new image at next_noise level is a weighted average of old image and predicted x0:
-            new_img = ((next_noise - curr_noise) * x0_pred + curr_noise * new_img) / next_noise
+            new_img = ((curr_noise - next_noise) * x0_pred + next_noise * new_img) / curr_noise
 
             if show_img:
                 imshow(x0_pred[0])

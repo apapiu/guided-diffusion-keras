@@ -6,6 +6,11 @@ Images generated for the prompt: `A small village in the Alps, spring, sunset`
 
 <img width="500" alt="image" src="https://user-images.githubusercontent.com/13619417/191170681-17c3820b-7fe1-44ad-bb51-30a521d465f7.png">
 
+Images generated for the prompt: `Portrait of a young woman with curly red hair, photograph` 
+
+<img width="500" alt="image" src="https://user-images.githubusercontent.com/13619417/192167167-5b308069-4483-451e-8aef-0a8dc1d1c10f.png">
+
+
 (more exampes below - try with your own inputs in Colab here: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/123iljowP_b5o-_6RjHZK8vbgBkrNn8-c?usp=sharing) )
 
 The goal of this repo is to provide a simple, self-contained codebase for Text to Image Diffusion that can be trained in Colab in a 
@@ -21,6 +26,7 @@ The easiest way to get aquainted with the code is thru the notebooks below.
 
 - Original Unet implementation in this [excellent blog post](https://keras.io/examples/generative/ddim/) - most of the code and Unet architecture in `denoiser.py` is based on this. I have added 
 additional text/CLIP/masking embeddings/inputs and cross/self attention.
+- https://colab.research.google.com/drive/1IJkrrV-D7boSCLVKhi7t5docRYqORtm3#scrollTo=TAUwPLG92r89
 - Laion Aesthetics 6.5+
 - Text 2 img package
 
@@ -166,22 +172,22 @@ Every card is roughly about twice as fast as the one before it so
 ### Examples:
 
 Prompt: `An Italian Villaga Painted by Picasso`
-<img width="781" alt="image" src="https://user-images.githubusercontent.com/13619417/192023316-b11a7a17-2359-4dc0-b727-c51bca167257.png">
+<img width="750" alt="image" src="https://user-images.githubusercontent.com/13619417/192023316-b11a7a17-2359-4dc0-b727-c51bca167257.png">
 
 `City at night`
-<img width="797" alt="image" src="https://user-images.githubusercontent.com/13619417/192022599-0f971f63-f124-4964-8e87-6cba51cf05bb.png">
-
-`A man in a suit in the field in wintertime`
-<img width="826" alt="image" src="https://user-images.githubusercontent.com/13619417/192016937-44544116-f27d-43af-a6ce-86506bb44346.png">
+<img width="750" alt="image" src="https://user-images.githubusercontent.com/13619417/192022599-0f971f63-f124-4964-8e87-6cba51cf05bb.png">
 
 `Photograph of young woman in a field of flowers, bokeh`
-<img width="828" alt="image" src="https://user-images.githubusercontent.com/13619417/192019522-b6f9231d-3e60-472d-b1b8-c43e05310de7.png">
+<img width="750" alt="image" src="https://user-images.githubusercontent.com/13619417/192019522-b6f9231d-3e60-472d-b1b8-c43e05310de7.png">
 
 `Street on an island in Greece`
-<img width="799" alt="image" src="https://user-images.githubusercontent.com/13619417/192021896-596f35db-5131-4da8-9256-c26e9fa1594d.png">
+<img width="750" alt="image" src="https://user-images.githubusercontent.com/13619417/192021896-596f35db-5131-4da8-9256-c26e9fa1594d.png">
 
 `A Mountain Lake in the spring at sunset`
-<img width="769" alt="image" src="https://user-images.githubusercontent.com/13619417/192023995-b102e30c-2e2f-499a-b5e0-0644aedcbf5c.png">
+<img width="750" alt="image" src="https://user-images.githubusercontent.com/13619417/192023995-b102e30c-2e2f-499a-b5e0-0644aedcbf5c.png">
+
+`A man in a suit in the field in wintertime`
+<img width="750" alt="image" src="https://user-images.githubusercontent.com/13619417/192016937-44544116-f27d-43af-a6ce-86506bb44346.png">
 
 
 CLIP interpolation: "A minimalist living room" -> "A Field in springtime, painting"

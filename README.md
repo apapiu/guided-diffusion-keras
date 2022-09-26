@@ -28,8 +28,9 @@ The easiest way to get aquainted with the code is thru the notebooks below.
 additional text/CLIP/masking embeddings/inputs and cross/self attention.
 - [Conditional CIFAR Model in Pytorch](https://colab.research.google.com/drive/1IJkrrV-D7boSCLVKhi7t5docRYqORtm3#scrollTo=TAUwPLG92r89)
 - [Laion Aesthetics 6.5+ Dataset](https://laion.ai/blog/laion-aesthetics/) - The 625K image-text pairs with predicted aesthetics scores of 6.5 or higher was used for training.
-- [Text 2 img package](https://github.com/hmiladhia/img2text)
-- TODO: more papers - VDM and DDIM papers
+- [Text 2 img package](https://github.com/hmiladhia/img2text) 
+- [Variational Diffusion Models (Paper)](https://arxiv.org/abs/2107.00630)
+- [DDIM Paper](https://arxiv.org/abs/2010.02502)
 
 ### Notebooks:
 
@@ -46,7 +47,7 @@ Training 50-100 epochs is even better.
   - You can get recognizable results after ~15 epochs
   ~ 10 minutes per epoch (V100)
 - Test Prompts on a model trained for about 60 epochs (~60 hours on 1 V100) on entire 600k Laion Aesthetics 6.5+. [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/123iljowP_b5o-_6RjHZK8vbgBkrNn8-c?usp=sharing) 
-  - This model has about 40 million parameters (150MB) 
+  - This model has about 40 million parameters (150MB) and can be downloaded from [here](https://huggingface.co/apapiu/diffusion_model_aesthetic_keras/blob/main/model_64_65_epochs.h5)
   - The examples in this repo use this model
 
 ### Model Setup:
@@ -54,7 +55,7 @@ Training 50-100 epochs is even better.
 The setup is fairly simple. 
 
 We train a denoising U-NET neural net that takes the following three inputs:
-- noise_level (sampled from 0 to 1 with more values concentrated close to 0)
+- `noise_level` (sampled from 0 to 1 with more values concentrated close to 0)
 - image (x) corrupted with a level of random noise
   - for a given `noise_level` between 0 and 1 the corruption is as follows:
     - `x_noisy = x*(1-noise_level) + z*noise_level where z ~ np.random.normal`
@@ -77,6 +78,9 @@ Using this model we then iteratively generate an image from random noise as foll
 
             # new image at next_noise level is a weighted average of old image and predicted x0:
             new_img = ((curr_noise - next_noise) * x0_pred + next_noise * new_img) / curr_noise
+
+The `predict_x_zero` method uses classifier free guidance by combining the conditional and unconditional
+prediction: `x0_pred = class_guidance * x0_pred_conditional + (1 - class_guidance) * x0_pred_unconditional`
 
 TODO: Explain more how we get the formula. VDM+DDIM.
 
@@ -129,17 +133,15 @@ This has a few advantages:
 - It's low tech and you don't have to learn a new platform like wandb.
 - Reading and saving data in from Drive in Colab is _very_ fast.
 
-With colab PRO+ ($50/month) I managed to train on V100/P100 continuously for 12-24 hours at a time. 
+I have slowly moved some data/models on huggingface but this is WIP.
 
-GPUs: With a Pro or Pro+ you will mostly get P100 GPU in my experience. I recommend V100/P100 for this tak. You might get A100 but you won't be able to keep an instance
-on with a A100 for too long. Generally the speed of training is as follows:
-- A100 fastest
-- V100 
-- P100
-- T4
-- K80 slowest
+#### GPU Speed:
+In terms of speed the GPUs go as follows:
+`A100>V100>P100>T4>K80` with the A100 being the fastest and every subsequent GPU being roughly twice as slow as 
+the one before it for training (e.g. P100 is about 4x slower than A100). While I did get the A100 a few times 
+the sweet spot was really V100/P100 on Colab Pro+ since the risk of being time-outed decreased. With colab PRO+ ($50/month) I managed to train on V100/P100 continuously for 12-24 hours at a time.
+  
 
-Every card is roughly about twice as fast as the one before it for training. 
  
 ### Validation:
 
@@ -183,7 +185,7 @@ in the training data.
 
 Prompt: `An Italian Villaga Painted by Picasso`
 
-<img width="750" alt="image" src="https://user-images.githubusercontent.com/13619417/192023316-b11a7a17-2359-4dc0-b727-c51bca167257.png">
+<img width="700" alt="image" src="https://user-images.githubusercontent.com/13619417/192023316-b11a7a17-2359-4dc0-b727-c51bca167257.png">
 
 `City at night`
 

@@ -61,14 +61,14 @@ We train a denoising U-NET neural net that takes the following three inputs:
 - `noise_level` (sampled from 0 to 1 with more values concentrated close to 0)
 - image (x) corrupted with a level of random noise
   - for a given `noise_level` between 0 and 1 the corruption is as follows:
-    - `x_noisy = x*(1-noise_level) + z*noise_level where z ~ np.random.normal`
+    - `x_noisy = x*(1-noise_level) + eps*noise_level where eps ~ np.random.normal`
 - CLIP embeddings of a text prompt
   - You can think of this as a numerical representation of a text prompt (this is the only pretrained model we use). 
 
 The output is a prediction of the denoised image - call it `f(x_noisy)`.
 
-The model is trained to minimize the absolute error `|f(x_noisy) - x|` between the prediction and 
-(you can also use squared error here). 
+The model is trained to minimize the absolute error `|f(x_noisy) - x|` between the prediction and actual image
+(you can also use squared error here). Note that I don't reparametrize the loss in terms of the noise here to keep things simple.
 
 Using this model we then iteratively generate an image from random noise as follows:
     
@@ -85,10 +85,18 @@ Using this model we then iteratively generate an image from random noise as foll
 The `predict_x_zero` method uses classifier free guidance by combining the conditional and unconditional
 prediction: `x0_pred = class_guidance * x0_pred_conditional + (1 - class_guidance) * x0_pred_unconditional`
 
-TODO: Explain more how we get the formula. VDM+DDIM.
+A bit of math: The approach above falls within the VDM parametrization see 3.1 in [Kingma et al.](https://arxiv.org/pdf/2107.00630.pdf):
 
-Note that I use a lot of unorthodox choices in the modelling (linear weights for the noise, 
-weird noise sampling, not scaling the attention). Since I am fairly new to generative models I found this to be a 
+$$ z_t = \alpha_t*x + \sigma_t*\epsilon,  \epsilon ~ n(0,1)$$
+
+Where $z_t$ is the noisy version of $x$ at time $t$.
+
+generally $\alpha_t$ is chosen to be $\sqrt{1-\sigma_t^2}$ so that the process is variance preserving. Here I chose $\alpha_t=1-\sigma_t$ so that we 
+linearly interpolate between the image and random noise. Why? Honestly I just wondered if it was going to work :) also it simplifies the updating equation quite a bit and it's easier to understand what the noise to signal ratio will look like. The updating equation above is the DDIM model for this parametrization which simplifies to a simple weighted average. Note that the DDIM model deterministically maps random normal noise to images - this has two benefits: we can interpolate in the random normal latent space, it takes fewer steps generaly to get decent image quality.
+
+
+
+Note that I use a lot of unorthodox choices in the modelling. Since I am fairly new to generative models I found this to be a 
 great way to learn what is crucial vs. what is nice to have. I generally did not see any divergences in training which supports
 the notion that **diffusion models are stable to train and are fairly robust to model choices**. The flipside of 
 this is that if you introduce subtle bugs in your code (of which I am sure there are many in this repo) they are pretty hard

@@ -48,8 +48,9 @@ class Diffuser:
         # classifier free guidance:
         x0_pred = self.class_guidance * x0_pred_label + (1 - self.class_guidance) * x0_pred_no_label
 
-        # clip the prediction using dynamic thresholding a la Imagen:
-        x0_pred = dynamic_thresholding(x0_pred, perc=self.perc_thresholding)
+        if self.perc_thresholding:
+            # clip the prediction using dynamic thresholding a la Imagen:
+            x0_pred = dynamic_thresholding(x0_pred, perc=self.perc_thresholding)
 
         return x0_pred
 

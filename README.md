@@ -1,8 +1,9 @@
 # Text to Image Model in Keras
 
+#### See [blogpost](https://apapiu.github.io/2022-10-06-diffusion_text_to_img_keras/) for more details.
+
 Codebase to train a CLIP conditioned Text to Image Diffusion model on Colab in Keras. See below for notebooks and examples with prompts.
 
-See [blogpost](https://apapiu.github.io/2022-10-06-diffusion_text_to_img_keras/) for more details.
 
 Images generated for the prompt: `A small village in the Alps, spring, sunset` 
 

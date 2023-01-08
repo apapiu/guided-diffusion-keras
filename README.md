@@ -2,6 +2,8 @@
 
 #### See [blogpost](https://apapiu.github.io/2022-10-06-diffusion_text_to_img_keras/) for more details.
 
+#### NEW: [Kaggle notebook](https://www.kaggle.com/code/apapiu/train-latent-diffusion-in-keras-from-scratch) that trains a 128*128 Latent Diffusion model on the Kaggle kernel hardware (P100 GPU). This is should be similar to the code for Stable diffusion.
+
 Codebase to train a CLIP conditioned Text to Image Diffusion model on Colab in Keras. See below for notebooks and examples with prompts.
 
 

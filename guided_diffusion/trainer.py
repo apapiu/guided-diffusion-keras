@@ -51,7 +51,7 @@ class Trainer:
         self.train_label_embeddings = train_label_embeddings
         self.image_size = train_data.shape[1]
         self.num_channels = train_data.shape[-1]
-        self.row = int(np.sqrt(self.num_imgs)
+        self.row = int(np.sqrt(self.num_imgs))
         self.labels = self._get_labels(train_data, train_label_embeddings)
 
     def _get_labels(self, train_data, train_label_embeddings):

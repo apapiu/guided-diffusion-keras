@@ -6,9 +6,9 @@ from numpy.linalg import norm
 
 import torch
 from torch.utils.data import DataLoader
-import clip
 
 def get_text_encodings(prompts, model):
+    import clip
     #model, preprocess = clip.load("ViT-B/32")
     data_loader = DataLoader(prompts, batch_size=256)
 

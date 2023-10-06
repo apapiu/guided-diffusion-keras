@@ -15,8 +15,8 @@ precomputed_embedding: False
 save_in_drive: False
 
 batch_size: 64
-num_imgs: 100
-row: 10
+num_imgs: 64
+row: 8
 learning_rate: 0.0003
 
 class_guidance: 1

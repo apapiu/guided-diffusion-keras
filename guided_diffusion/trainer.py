@@ -51,6 +51,7 @@ class Trainer:
         self.train_label_embeddings = train_label_embeddings
         self.image_size = train_data.shape[1]
         self.num_channels = train_data.shape[-1]
+        self.row = int(np.sqrt(self.num_imgs)
         self.labels = self._get_labels(train_data, train_label_embeddings)
 
     def _get_labels(self, train_data, train_label_embeddings):
@@ -137,26 +138,17 @@ def get_train_data(file_name, captions_path=None, imgs_path=None, embedding_path
         train_data, train_label_embeddings = np.load(imgs_path), np.load(embedding_path)
 
     return train_data, train_label_embeddings
-
-
-
     #train_data, train_label_embeddings = get_data(npz_file_name=file_name, prop=0.6, captions=False)
 
 
 if __name__=='__main__':
 
-    # Initialize Trainer with config file
     trainer = Trainer('guided_diffusion/configs/base_model.yaml')
 
-    # get training data
     train_data, train_label_embeddings = get_train_data(trainer.file_name)
-
-    # Preprocess data
     trainer.preprocess_data(train_data, train_label_embeddings)
-
-    # Initialize the model
-    trainer.initialize_model(get_network, train_data, train_label_embeddings)
-
-    # Perform data checks
+    trainer.initialize_model()
     trainer.data_checks(train_data)
+    trainer.train()
+
 

@@ -150,5 +150,3 @@ if __name__=='__main__':
     trainer.initialize_model()
     trainer.data_checks(train_data)
     trainer.train()
-
-

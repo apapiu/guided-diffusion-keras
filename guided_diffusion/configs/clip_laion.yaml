@@ -1,0 +1,24 @@
+train_model: True
+epochs: 3
+file_name: "from_huggingface" #data stored in huggingface
+
+channels: 96
+channel_multiplier: [1, 2, 3, 4]
+block_depth: 2
+emb_size: 512
+num_classes: 12
+attention_levels: [0, 0, 1, 0]
+embedding_dims: 32
+embedding_max_frequency: 1000.0
+
+precomputed_embedding: True
+save_in_drive: False
+
+batch_size: 64
+num_imgs: 36
+learning_rate: 0.0003
+
+class_guidance: 4
+MODEL_NAME: "model_test_aesthetic"
+from_scratch: True
+data_dir: "/content/diffusion_model_aesthetic_keras"

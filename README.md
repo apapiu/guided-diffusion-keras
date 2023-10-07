@@ -19,7 +19,15 @@ Images generated for the prompt: `Portrait of a young woman with curly red hair,
 (more exampes below - try with your own inputs in Colab here: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/123iljowP_b5o-_6RjHZK8vbgBkrNn8-c?usp=sharing) )
 
 
-### Intro
+## Table of Contents:
+- [Into](#intro)
+- [Notebooks](#notebooks)
+- [Usage](#usage)
+- [Model Setup](#model-setup)
+- [Data](#data)
+- [Examples](#examples)
+
+## Intro
 
 The goal of this repo is to provide a simple, self-contained codebase for Text to Image Diffusion that can be trained in Colab in a 
 reasonable amount of time. 
@@ -57,6 +65,25 @@ Training 50-100 epochs is even better.
 - Test Prompts on a model trained for about 60 epochs (~60 hours on 1 V100) on entire 600k Laion Aesthetics 6.5+. [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/123iljowP_b5o-_6RjHZK8vbgBkrNn8-c?usp=sharing) 
   - This model has about 40 million parameters (150MB) and can be downloaded from [here](https://huggingface.co/apapiu/diffusion_model_aesthetic_keras/blob/main/model_64_65_epochs.h5)
   - The examples in this repo use this model
+ 
+## Usage
+
+The model architecture, training parameters, and generation parameters are specified in a yaml file see [here](https://github.com/apapiu/guided-diffusion-keras/tree/main/guided_diffusion/configs) for examples. If unsure you can use the base_model. The get_train_data is built to work with various known datasets. If you have
+your own dataset you can just use that instead. `train_label_embeddings` is expected to be a matrix of embedding the model conditions on (usually some embedding of text but could be anything).
+
+
+```python
+config_path = "guided-diffusion-keras/guided_diffusion/configs/base_model.yaml"
+
+trainer = Trainer(config_path)
+print(trainer.__dict__)
+
+train_data, train_label_embeddings = get_train_data(trainer.file_name) #OR get your own images and label embeddings in matrix form.
+trainer.preprocess_data(train_data, train_label_embeddings)
+trainer.initialize_model()
+trainer.data_checks(train_data)
+trainer.train()
+```
 
 ## Model Setup
 

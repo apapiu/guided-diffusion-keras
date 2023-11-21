@@ -68,7 +68,7 @@ def diffusion(n_iter=20, class_guidance=3, plot_all_images=True, save_img_name="
 
     return new_imgs
 
-lass SinusoidalEmbedding(nn.Module):
+class SinusoidalEmbedding(nn.Module):
     def __init__(self, embedding_min_frequency=1.0, embedding_max_frequency=1000.0, embedding_dims=32):
         super(SinusoidalEmbedding, self).__init__()
 
@@ -88,6 +88,30 @@ lass SinusoidalEmbedding(nn.Module):
         embeddings = torch.cat([torch.sin(angular_speeds * x), 
                                 torch.cos(angular_speeds * x)], dim=-1)
         return embeddings
+
+class SpatialAttention(nn.Module):
+    def __init__(self, c_in):
+        super().__init__()
+        self.proj = nn.Conv2d(c_in, 3*c_in, 1, padding='same') #just projection.
+        self.attn = nn.MultiheadAttention(embed_dim = c_in, num_heads = 4, dropout=0)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        bs, c, h, w = x.size()
+        #h*w, c -> attend to various spatial dimensions
+        q,k,v = self.proj(x).view(bs, 3*c, h*w).transpose(1,2).chunk(3, dim=2)
+        out, _ = self.attn(q,k,v)
+        out = out.transpose(1,2).view(bs, c, h, w)
+
+        return self.relu(out) + x
+
+#     def forward(self, x):
+#         bs, c, h, w = x.shape()
+#         #c, h*w -> attend to various channels
+#         q,k,v = self.proj(x).view(bs, c, h*w).chunk(3)
+#         out = self.attn(q,k,v)
+#         out = out.view(bs, c, h, w)
+#         retnr out + x
 
 
 #residual block:
